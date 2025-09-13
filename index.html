@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Extractor 🎨</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center text-white font-sans">
+
+  <div class="bg-white text-gray-900 shadow-2xl rounded-2xl p-8 w-full max-w-2xl text-center">
+    <h1 class="text-3xl font-bold mb-4">🎨 Color Extractor</h1>
+    <p class="mb-6 text-gray-600">Upload an image and discover its dominant colors.</p>
+
+    <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg mb-6 inline-block">
+      <input type="file" id="fileInput" accept="image/*" class="hidden">
+      Upload Image
+    </label>
+
+    <img id="preview" class="mx-auto max-h-64 rounded-lg shadow-md border mb-6 hidden" crossorigin="anonymous">
+
+    <h2 class="text-xl font-semibold mb-2">Dominant Color</h2>
+    <div id="dominantColor" class="flex justify-center mb-6"></div>
+
+    <h2 class="text-xl font-semibold mb-2">Palette</h2>
+    <div id="palette" class="flex flex-wrap justify-center gap-4"></div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const dominantDiv = document.getElementById('dominantColor');
+    const paletteDiv = document.getElementById('palette');
+    const colorThief = new ColorThief();
+
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          preview.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    preview.addEventListener('load', () => {
+      const dominantColor = colorThief.getColor(preview);
+      dominantDiv.innerHTML = "";
+      showColor(dominantDiv, dominantColor);
+
+      const palette = colorThief.getPalette(preview, 6);
+      paletteDiv.innerHTML = "";
+      palette.forEach(color => showColor(paletteDiv, color));
+    });
+
+    function showColor(container, rgb) {
+      const hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+      const box = document.createElement('div');
+      box.className = "w-24 h-24 rounded-lg shadow-lg flex flex-col items-center justify-center text-xs font-semibold";
+      box.style.backgroundColor = hex;
+      box.innerHTML = `<span>${hex}</span><span>rgb(${rgb.join(",")})</span>`;
+      container.appendChild(box);
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+  </script>
+</body>
+</html>
